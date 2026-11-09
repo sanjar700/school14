@@ -179,7 +179,7 @@
   </div>
 
 <script>
-  // ТВОИ КЛЮЧИ
+  // ТВОИ КЛЮЧИ ВСТАВЛЕНЫ СЮДА
   const BIN_ID = "6af229ecac621005a7aee8e"; 
   const MASTER_KEY = "$2a$10$RGInjoRDUKM6i0V4S3DwnOk8uvYDHToC.iZITQRTrI1eUuQ6E.a9y";
   const API_URL = "https://api.jsonbin.io/v3/b/" + BIN_ID;
@@ -195,10 +195,12 @@
   async function loadData() {
     try {
       const res = await fetch(`${API_URL}/latest`, {
-        headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+        headers: { 
+          'X-Master-Key': MASTER_KEY, 
+          'X-Bin-Meta': 'false' 
+        }
       });
       
-      // Если сервер вернул ошибку, мы её сейчас увидим
       if (!res.ok) {
         throw new Error(`HTTP Ошибка: ${res.status}`);
       }
@@ -225,7 +227,7 @@
 
   async function saveData() {
     try {
-      await fetch(API_URL, {
+      const res = await fetch(API_URL, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -233,9 +235,13 @@
         },
         body: JSON.stringify({ posts: posts, chatClosed: chatClosed })
       });
+      if (!res.ok) {
+        throw new Error(`HTTP Ошибка: ${res.status}`);
+      }
       loadData(); 
     } catch(e) {
       console.error("Ошибка сохранения:", e);
+      alert("Не удалось сохранить данные: " + e.message);
     }
   }
 
