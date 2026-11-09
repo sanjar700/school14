@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#ffffff">
 <title>14 школа — Голос учеников</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -197,16 +196,10 @@
 
     try {
       const res = await fetch(API_URL);
-      
-      if (res.status === 429) {
-        isFetching = false;
-        return; // Тихо игнорируем перегрузку
-      }
-
+      if (res.status === 429) { isFetching = false; return; } // Тихо пропускаем перегрузку сервера
       if (!res.ok) throw new Error(`HTTP Ошибка: ${res.status}`);
       
       const data = await res.json();
-      
       if (data && data.posts) {
         posts = data.posts;
         posts.sort((a, b) => b.created - a.created);
@@ -217,13 +210,6 @@
       }
     } catch(e) {
       console.error("Ошибка загрузки:", e);
-      if (!e.message.includes("429")) {
-        document.getElementById('postsFeed').innerHTML = `
-          <div class="text-center p-8 text-rose-500 font-bold bg-rose-50 rounded-2xl border border-rose-200">
-            Ошибка подключения к базе данных.
-            <br><span class="text-xs font-normal mt-2 block opacity-80">Детали: ${e.message}</span>
-          </div>`;
-      }
     } finally {
       isFetching = false;
     }
@@ -240,11 +226,11 @@
       loadData(); 
     } catch(e) {
       console.error("Ошибка сохранения:", e);
+      alert("Ошибка соединения. Попробуйте еще раз.");
     }
   }
 
-  // Обновляем раз в 15 секунд, чтобы не было перегрузки (ошибки 429)
-  setInterval(loadData, 15000);
+  setInterval(loadData, 15000); // Обновление раз в 15 секунд
 
   function openForm(kind) {
     if (chatClosed && userRole !== 'admin') { alert('Приём новых обращений временно закрыт.'); return; }
@@ -434,4 +420,4 @@
   loadData();
 </script>
 </body>
-</html
+</html>
