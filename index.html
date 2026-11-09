@@ -178,8 +178,10 @@
   </div>
 
 <script>
-  const BIN_ID = "4848d5ad658d"; 
-  const API_URL = "https://json.extendsclass.com/bin/" + BIN_ID;
+  // ТВОИ НОВЫЕ КЛЮЧИ
+  const BIN_ID = "6af2360cffd5d16053b4c2e4"; 
+  const MASTER_KEY = "$2a$10$0yJj/.431XCQ/O9liEl3geOAfR7x.xk7BQ5dVLqbmHlBLiLnej5zO";
+  const API_URL = "https://api.jsonbin.io/v3/b/" + BIN_ID;
 
   let posts = [];
   let chatClosed = false;
@@ -195,8 +197,14 @@
     isFetching = true;
 
     try {
-      const res = await fetch(API_URL);
-      if (res.status === 429) { isFetching = false; return; } // Тихо пропускаем перегрузку сервера
+      const res = await fetch(`${API_URL}/latest`, {
+        headers: { 
+          'X-Master-Key': MASTER_KEY, 
+          'X-Bin-Meta': 'false' 
+        }
+      });
+      
+      if (res.status === 429) { isFetching = false; return; } 
       if (!res.ok) throw new Error(`HTTP Ошибка: ${res.status}`);
       
       const data = await res.json();
@@ -210,6 +218,13 @@
       }
     } catch(e) {
       console.error("Ошибка загрузки:", e);
+      if (!e.message.includes("429")) {
+        document.getElementById('postsFeed').innerHTML = `
+          <div class="text-center p-8 text-rose-500 font-bold bg-rose-50 rounded-2xl border border-rose-200">
+            Ошибка подключения к базе данных.
+            <br><span class="text-xs font-normal mt-2 block opacity-80">Детали: ${e.message}</span>
+          </div>`;
+      }
     } finally {
       isFetching = false;
     }
@@ -219,7 +234,10 @@
     try {
       const res = await fetch(API_URL, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Master-Key': MASTER_KEY 
+        },
         body: JSON.stringify({ posts: posts, chatClosed: chatClosed })
       });
       if (!res.ok) throw new Error(`HTTP Ошибка: ${res.status}`);
@@ -230,7 +248,7 @@
     }
   }
 
-  setInterval(loadData, 15000); // Обновление раз в 15 секунд
+  setInterval(loadData, 15000); 
 
   function openForm(kind) {
     if (chatClosed && userRole !== 'admin') { alert('Приём новых обращений временно закрыт.'); return; }
