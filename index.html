@@ -179,7 +179,6 @@
   </div>
 
 <script>
-  // ТВОЙ ID ОТ EXTENDSCLASS УЖЕ ВСТАВЛЕН
   const BIN_ID = "4848d5ad658d"; 
   const API_URL = "https://json.extendsclass.com/bin/" + BIN_ID;
 
@@ -187,17 +186,24 @@
   let chatClosed = false;
   let currentFilter = 'all';
   let userRole = localStorage.getItem('school14_role') || null; 
+  let isFetching = false; 
 
   const ADMIN_PASSWORD = 'bozdakov';
   const PARLAMENT_PASSWORD = 'parlament14';
 
   async function loadData() {
+    if (isFetching) return;
+    isFetching = true;
+
     try {
       const res = await fetch(API_URL);
       
-      if (!res.ok) {
-        throw new Error(`HTTP Ошибка: ${res.status}`);
+      if (res.status === 429) {
+        isFetching = false;
+        return; // Тихо игнорируем перегрузку
       }
+
+      if (!res.ok) throw new Error(`HTTP Ошибка: ${res.status}`);
       
       const data = await res.json();
       
@@ -211,11 +217,15 @@
       }
     } catch(e) {
       console.error("Ошибка загрузки:", e);
-      document.getElementById('postsFeed').innerHTML = `
-        <div class="text-center p-8 text-rose-500 font-bold bg-rose-50 rounded-2xl border border-rose-200">
-          Ошибка подключения к базе данных.
-          <br><span class="text-xs font-normal mt-2 block opacity-80">Детали: ${e.message}</span>
-        </div>`;
+      if (!e.message.includes("429")) {
+        document.getElementById('postsFeed').innerHTML = `
+          <div class="text-center p-8 text-rose-500 font-bold bg-rose-50 rounded-2xl border border-rose-200">
+            Ошибка подключения к базе данных.
+            <br><span class="text-xs font-normal mt-2 block opacity-80">Детали: ${e.message}</span>
+          </div>`;
+      }
+    } finally {
+      isFetching = false;
     }
   }
 
@@ -223,27 +233,21 @@
     try {
       const res = await fetch(API_URL, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ posts: posts, chatClosed: chatClosed })
       });
-      if (!res.ok) {
-        throw new Error(`HTTP Ошибка: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP Ошибка: ${res.status}`);
       loadData(); 
     } catch(e) {
       console.error("Ошибка сохранения:", e);
-      alert("Не удалось сохранить данные: " + e.message);
     }
   }
 
-  setInterval(loadData, 5000);
+  // Обновляем раз в 15 секунд, чтобы не было перегрузки (ошибки 429)
+  setInterval(loadData, 15000);
 
   function openForm(kind) {
-    if (chatClosed && userRole !== 'admin') {
-      alert('Приём новых обращений временно закрыт.'); return;
-    }
+    if (chatClosed && userRole !== 'admin') { alert('Приём новых обращений временно закрыт.'); return; }
     document.getElementById('postKind').value = kind;
     document.getElementById('formHeader').textContent = kind === 'idea' ? 'Предложить новую идею' : 'Сообщить о проблеме';
     document.getElementById('formSection').classList.remove('hidden');
@@ -265,10 +269,7 @@
       category: document.getElementById('postCategory').value,
       title: document.getElementById('postTitle').value.trim(),
       body: document.getElementById('postBody').value.trim(),
-      votes: 1, 
-      status: 'Новое', 
-      answer: '', 
-      created: Date.now()
+      votes: 1, status: 'Новое', answer: '', created: Date.now()
     };
 
     posts.unshift(newPost); 
@@ -289,66 +290,26 @@
     }
   }
 
-  function toggleChatStatus() {
-    chatClosed = !chatClosed;
-    saveData();
-  }
-
-  function updateStatus(id, newStatus) {
-    const post = posts.find(p => p.id === id);
-    if (post) { post.status = newStatus; saveData(); }
-  }
-
-  function updateAnswer(id, answerText) {
-    const post = posts.find(p => p.id === id);
-    if (post) { post.answer = answerText; saveData(); }
-  }
-
-  function deletePost(id) {
-    if (userRole !== 'admin') return;
-    if (confirm('Вы уверены, что хотите удалить это обращение?')) {
-      posts = posts.filter(p => p.id !== id);
-      saveData();
-    }
-  }
-
-  function saveAnswerBtn(id) {
-      const textarea = document.getElementById('answer-' + id);
-      updateAnswer(id, textarea.value.trim());
-      alert('Ответ сохранен!');
-  }
+  function toggleChatStatus() { chatClosed = !chatClosed; saveData(); }
+  function updateStatus(id, newStatus) { const post = posts.find(p => p.id === id); if (post) { post.status = newStatus; saveData(); } }
+  function updateAnswer(id, answerText) { const post = posts.find(p => p.id === id); if (post) { post.answer = answerText; saveData(); } }
+  function deletePost(id) { if (userRole === 'admin' && confirm('Удалить обращение?')) { posts = posts.filter(p => p.id !== id); saveData(); } }
+  function saveAnswerBtn(id) { const text = document.getElementById('answer-' + id).value.trim(); updateAnswer(id, text); alert('Ответ сохранен!'); }
 
   function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
   function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
-  function togglePasswordVisibility() {
-    const input = document.getElementById('accessCodeInput');
-    input.type = input.type === 'password' ? 'text' : 'password';
-  }
+  function togglePasswordVisibility() { const input = document.getElementById('accessCodeInput'); input.type = input.type === 'password' ? 'text' : 'password'; }
 
   function performLogin() {
     const code = document.getElementById('accessCodeInput').value.trim();
-    if (code === ADMIN_PASSWORD) {
-      userRole = 'admin';
-      localStorage.setItem('school14_role', 'admin');
-      closeLoginModal();
-    } else if (code === PARLAMENT_PASSWORD) {
-      userRole = 'parlament';
-      localStorage.setItem('school14_role', 'parlament');
-      closeLoginModal();
-    } else {
-      alert('Неверный код доступа.'); return;
-    }
+    if (code === ADMIN_PASSWORD) { userRole = 'admin'; localStorage.setItem('school14_role', 'admin'); closeLoginModal(); }
+    else if (code === PARLAMENT_PASSWORD) { userRole = 'parlament'; localStorage.setItem('school14_role', 'parlament'); closeLoginModal(); }
+    else { alert('Неверный код доступа.'); return; }
     document.getElementById('accessCodeInput').value = '';
-    updateRoleUI();
-    render();
+    updateRoleUI(); render();
   }
 
-  function logoutAdmin() {
-    userRole = null;
-    localStorage.removeItem('school14_role');
-    updateRoleUI();
-    render();
-  }
+  function logoutAdmin() { userRole = null; localStorage.removeItem('school14_role'); updateRoleUI(); render(); }
 
   function updateRoleUI() {
     const badgeText = document.getElementById('authBadgeText');
@@ -359,37 +320,29 @@
     if (userRole === 'admin') {
       badgeText.textContent = 'Администратор';
       badgeBtn.className = 'bg-rose-600 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-rose-400 flex items-center gap-2';
-      adminPanel.classList.remove('hidden');
-      parlamentPanel.classList.add('hidden');
+      adminPanel.classList.remove('hidden'); parlamentPanel.classList.add('hidden');
     } else if (userRole === 'parlament') {
       badgeText.textContent = 'Парламент';
       badgeBtn.className = 'bg-indigo-600 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-indigo-400 flex items-center gap-2';
-      adminPanel.classList.add('hidden');
-      parlamentPanel.classList.remove('hidden');
+      adminPanel.classList.add('hidden'); parlamentPanel.classList.remove('hidden');
     } else {
       badgeText.textContent = 'Вход для учителей';
       badgeBtn.className = 'bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-white/20 transition-all flex items-center gap-2';
-      adminPanel.classList.add('hidden');
-      parlamentPanel.classList.add('hidden');
+      adminPanel.classList.add('hidden'); parlamentPanel.classList.add('hidden');
     }
   }
 
   function setFilter(filter) {
     currentFilter = filter;
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.className = 'filter-btn bg-white text-slate-600 border border-slate-200 px-3 py-1.5 rounded-xl hover:bg-slate-50';
-    });
+    document.querySelectorAll('.filter-btn').forEach(btn => { btn.className = 'filter-btn bg-white text-slate-600 border border-slate-200 px-3 py-1.5 rounded-xl hover:bg-slate-50'; });
     document.getElementById(`filter-${filter}`).className = 'filter-btn bg-slate-900 text-white px-3 py-1.5 rounded-xl';
     render();
   }
 
   function render() {
     updateRoleUI();
-
     const toggleBtn = document.getElementById('toggleToggleChatBtn');
-    if (toggleBtn) {
-      toggleBtn.textContent = chatClosed ? '🟢 Открыть приём' : '🔒 Закрыть приём';
-    }
+    if (toggleBtn) toggleBtn.textContent = chatClosed ? '🟢 Открыть приём' : '🔒 Закрыть приём';
 
     const noticeText = document.getElementById('noticeText');
     const creationActions = document.getElementById('creationActions');
@@ -424,10 +377,7 @@
     const votedList = JSON.parse(localStorage.getItem('voted_posts_json') || '[]');
 
     filtered.forEach(p => {
-      const isDone = p.status === 'Выполнено';
-      const isNew = p.status === 'Новое';
-      const isWork = p.status === 'В работе';
-      
+      const isDone = p.status === 'Выполнено', isNew = p.status === 'Новое', isWork = p.status === 'В работе';
       let statusClass = "bg-slate-100 text-slate-700";
       if (isDone) statusClass = "bg-emerald-100 text-emerald-700";
       if (isWork) statusClass = "bg-amber-100 text-amber-700";
@@ -452,8 +402,7 @@
                   ${userRole === 'admin' ? `<button onclick="deletePost('${p.id}')" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ml-auto">Удалить</button>` : ''}
               </div>
               <textarea id="answer-${p.id}" placeholder="Напишите официальный ответ..." class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">${p.answer || ''}</textarea>
-          </div>
-          `;
+          </div>`;
       }
 
       feed.innerHTML += `
@@ -469,9 +418,7 @@
               <span class="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0 ${statusClass}">${p.status}</span>
           </div>
           <p class="text-sm text-slate-600 leading-relaxed">${p.body}</p>
-          
           ${p.answer ? `<div class="mt-3 p-3.5 bg-indigo-50 border border-indigo-100 rounded-xl text-sm text-indigo-950"><b class="text-indigo-800">🏛️ Ответ:</b> ${p.answer}</div>` : ''}
-          
           <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
               <span class="text-xs font-bold text-slate-500 flex items-center gap-1">👍 <span>${p.votes} голосов</span></span>
               <button onclick="vote('${p.id}')" ${hasVoted ? 'disabled' : ''} class="text-xs font-bold px-4 py-2 rounded-xl transition-colors ${voteBtnClass}">
@@ -479,8 +426,7 @@
               </button>
           </div>
           ${controlsHtml}
-      </div>
-      `;
+      </div>`;
     });
   }
 
@@ -488,4 +434,4 @@
   loadData();
 </script>
 </body>
-</html>
+</html
