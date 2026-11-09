@@ -179,10 +179,9 @@
   </div>
 
 <script>
-  // ТВОИ КЛЮЧИ ВСТАВЛЕНЫ СЮДА
-  const BIN_ID = "6af229ecac621005a7aee8e"; 
-  const MASTER_KEY = "$2a$10$RGInjoRDUKM6i0V4S3DwnOk8uvYDHToC.iZITQRTrI1eUuQ6E.a9y";
-  const API_URL = "https://api.jsonbin.io/v3/b/" + BIN_ID;
+  // ТВОЙ ID ОТ EXTENDSCLASS УЖЕ ВСТАВЛЕН
+  const BIN_ID = "4848d5ad658d"; 
+  const API_URL = "https://json.extendsclass.com/bin/" + BIN_ID;
 
   let posts = [];
   let chatClosed = false;
@@ -194,12 +193,7 @@
 
   async function loadData() {
     try {
-      const res = await fetch(`${API_URL}/latest`, {
-        headers: { 
-          'X-Master-Key': MASTER_KEY, 
-          'X-Bin-Meta': 'false' 
-        }
-      });
+      const res = await fetch(API_URL);
       
       if (!res.ok) {
         throw new Error(`HTTP Ошибка: ${res.status}`);
@@ -230,8 +224,7 @@
       const res = await fetch(API_URL, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'X-Master-Key': MASTER_KEY
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ posts: posts, chatClosed: chatClosed })
       });
