@@ -1,0 +1,278 @@
+<!DOCTYPE html>  <html lang="ru">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1">  
+<title>Школа №14 — Голос учеников</title>  
+<style>  
+*{box-sizing:border-box}  
+body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#172033}  
+header{background:#142b50;color:white;padding:25px;text-align:center}  
+header h1{margin:0;font-size:28px}  
+main{max-width:850px;margin:25px auto;padding:15px}  
+button{border:0;border-radius:9px;padding:12px 17px;cursor:pointer;background:#2456a6;color:white;margin:4px}  
+button:hover{opacity:.85}  
+input,textarea,select{width:100%;padding:12px;margin:7px 0;border:1px solid #ccc;border-radius:8px;font:inherit}  
+textarea{min-height:100px;resize:vertical}  
+.card{background:white;padding:18px;border-radius:13px;margin:15px 0;box-shadow:0 2px 8px #0001}  
+.modal{display:none;position:fixed;inset:0;background:#0009;align-items:center;justify-content:center;padding:15px;z-index:5}  
+.modal-content{background:white;padding:22px;border-radius:14px;width:100%;max-width:420px}  
+.small{color:#64748b;font-size:13px}  
+.status{font-weight:bold;color:#2456a6}  
+.danger{background:#b42318}  
+.green{background:#16834a}  
+#closedMessage{display:none;color:#b42318;font-weight:bold}  
+</style>  
+</head>  
+<body>  <header>  
+<h1>ШКОЛА №14</h1>  
+<p>ТВОЯ ШКОЛА. ТВОЁ МНЕНИЕ.</p>  
+<button onclick="openLogin()">Вход</button>  
+</header>  <main>  
+<h2>Голос учеников</h2>  
+<p>Предлагай идеи, сообщай о проблемах и голосуй за важные обращения!</p>  <div class="card">  
+<h3>Предложить идею или проблему</h3>  
+<div id="closedMessage">Приём обращений временно закрыт.</div>  
+<div id="formArea">  
+<select id="type">  
+<option value="Идея">Идея</option>  
+<option value="Проблема">Проблема</option>  
+</select>  
+<input id="title" placeholder="Название обращения">  
+<textarea id="description" placeholder="Опиши подробнее"></textarea>  
+<button onclick="addPost()">Отправить</button>  
+</div>  
+</div>  <h2>Обращения учеников</h2>  
+<button onclick="filterPosts('Все')">Все</button>  
+<button onclick="filterPosts('Идея')">Идеи</button>  
+<button onclick="filterPosts('Проблема')">Проблемы</button>  
+<div id="posts"></div>  
+</main>  <div class="modal" id="loginModal">  
+<div class="modal-content">  
+<h2>Вход</h2>  
+<input id="password" type="password" placeholder="Введите пароль">  
+<button onclick="login()">Войти</button>  
+<button onclick="closeLogin()">Отмена</button>  
+<p id="loginError" style="color:red"></p>  
+</div>  
+</div>  <div class="modal" id="adminModal">  
+<div class="modal-content">  
+<h2 id="roleTitle">Панель управления</h2>  
+<div id="adminControls"></div>  
+<button onclick="closeAdmin()">Закрыть</button>  
+</div>  
+</div>  <script>  
+const ADMIN_PASSWORD="bozdakov";  
+const PARLIAMENT_PASSWORD="parlament14";  
+  
+let posts=JSON.parse(localStorage.getItem("school14_posts"))||[  
+{id:1,type:"Проблема",title:"Нужно больше урн возле спортзала",description:"Предлагаем установить дополнительные урны.",votes:14,status:"В работе",answer:"Обращение принято в работу."},  
+{id:2,type:"Идея",title:"Турнир по настольному теннису",description:"Предлагаем провести школьный турнир.",votes:29,status:"Выполнено",answer:"Турнир планируется."}  
+];  
+  
+let closed=localStorage.getItem("school14_closed")==="true";  
+let voted=JSON.parse(localStorage.getItem("school14_voted"))||[];  
+let currentRole=null;  
+let currentFilter="Все";  
+  
+function save(){  
+localStorage.setItem("school14_posts",JSON.stringify(posts));  
+localStorage.setItem("school14_closed",closed);  
+localStorage.setItem("school14_voted",JSON.stringify(voted));  
+}  
+  
+function render(){  
+document.getElementById("closedMessage").style.display=closed?"block":"none";  
+document.getElementById("formArea").style.display=closed?"none":"block";  
+  
+let list=document.getElementById("posts");  
+list.innerHTML="";  
+  
+let filtered=posts.filter(p=>currentFilter==="Все"||p.type===currentFilter);  
+  
+if(filtered.length===0){  
+list.innerHTML="<p>Пока нет обращений.</p>";  
+return;  
+}  
+  
+filtered.forEach(p=>{  
+let card=document.createElement("div");  
+card.className="card";  
+  
+let title=document.createElement("h3");  
+title.textContent=p.title;  
+  
+let type=document.createElement("p");  
+type.textContent=p.type;  
+  
+let description=document.createElement("p");  
+description.textContent=p.description;  
+  
+let status=document.createElement("p");  
+status.className="status";  
+status.textContent="Статус: "+p.status;  
+  
+let answer=document.createElement("p");  
+answer.textContent=p.answer?"Ответ парламента: "+p.answer:"Официального ответа пока нет.";  
+  
+let votes=document.createElement("p");  
+votes.textContent="Голоса: "+p.votes;  
+  
+card.append(title,type,description,status,answer,votes);  
+  
+let voteButton=document.createElement("button");  
+voteButton.textContent=voted.includes(p.id)?"Вы уже голосовали":"Голосовать";  
+voteButton.disabled=voted.includes(p.id);  
+voteButton.onclick=()=>vote(p.id);  
+card.appendChild(voteButton);  
+  
+if(currentRole){  
+let statusSelect=document.createElement("select");  
+["На рассмотрении","В работе","Выполнено","Отклонено"].forEach(s=>{  
+let option=document.createElement("option");  
+option.value=s;  
+option.textContent=s;  
+if(s===p.status)option.selected=true;  
+statusSelect.appendChild(option);  
+});  
+statusSelect.onchange=()=>{  
+p.status=statusSelect.value;  
+save();render();  
+};  
+card.appendChild(statusSelect);  
+  
+let answerInput=document.createElement("textarea");  
+answerInput.placeholder="Официальный ответ";  
+answerInput.value=p.answer||"";  
+card.appendChild(answerInput);  
+  
+let answerButton=document.createElement("button");  
+answerButton.textContent="Сохранить ответ";  
+answerButton.onclick=()=>{  
+p.answer=answerInput.value.trim();  
+save();render();  
+};  
+card.appendChild(answerButton);  
+}  
+  
+if(currentRole==="admin"){  
+let deleteButton=document.createElement("button");  
+deleteButton.textContent="Удалить обращение";  
+deleteButton.className="danger";  
+deleteButton.onclick=()=>{  
+if(confirm("Удалить это обращение?")){  
+posts=posts.filter(x=>x.id!==p.id);  
+save();render();  
+}  
+};  
+card.appendChild(deleteButton);  
+}  
+  
+list.appendChild(card);  
+});  
+}  
+  
+function addPost(){  
+if(closed)return;  
+let type=document.getElementById("type").value;  
+let title=document.getElementById("title").value.trim();  
+let description=document.getElementById("description").value.trim();  
+  
+if(!title||!description){  
+alert("Заполни название и описание!");  
+return;  
+}  
+  
+posts.unshift({  
+id:Date.now(),  
+type,title,description,  
+votes:0,  
+status:"На рассмотрении",  
+answer:""  
+});  
+  
+document.getElementById("title").value="";  
+document.getElementById("description").value="";  
+save();render();  
+alert("Обращение опубликовано!");  
+}  
+  
+function vote(id){  
+if(voted.includes(id))return;  
+let post=posts.find(p=>p.id===id);  
+if(!post)return;  
+post.votes++;  
+voted.push(id);  
+save();render();  
+}  
+  
+function filterPosts(filter){  
+currentFilter=filter;  
+render();  
+}  
+  
+function openLogin(){  
+document.getElementById("loginModal").style.display="flex";  
+document.getElementById("password").value="";  
+document.getElementById("loginError").textContent="";  
+}  
+  
+function closeLogin(){  
+document.getElementById("loginModal").style.display="none";  
+}  
+  
+function login(){  
+let password=document.getElementById("password").value;  
+  
+if(password===ADMIN_PASSWORD){  
+currentRole="admin";  
+}else if(password===PARLIAMENT_PASSWORD){  
+currentRole="parliament";  
+}else{  
+document.getElementById("loginError").textContent="Неверный пароль!";  
+return;  
+}  
+  
+closeLogin();  
+openAdmin();  
+render();  
+}  
+  
+function openAdmin(){  
+document.getElementById("roleTitle").textContent=  
+currentRole==="admin"?"Панель администратора":"Панель парламента";  
+  
+let controls=document.getElementById("adminControls");  
+controls.innerHTML="";  
+  
+if(currentRole==="admin"){  
+let info=document.createElement("p");  
+info.textContent="Приём обращений сейчас: "+(closed?"закрыт":"открыт");  
+controls.appendChild(info);  
+  
+let toggle=document.createElement("button");  
+toggle.textContent=closed?"Открыть приём обращений":"Закрыть приём обращений";  
+toggle.onclick=()=>{  
+closed=!closed;  
+save();  
+openAdmin();  
+render();  
+};  
+controls.appendChild(toggle);  
+}else{  
+let info=document.createElement("p");  
+info.textContent="Здесь можно менять статусы обращений и отвечать ученикам.";  
+controls.appendChild(info);  
+}  
+  
+document.getElementById("adminModal").style.display="flex";  
+}  
+  
+function closeAdmin(){  
+document.getElementById("adminModal").style.display="none";  
+currentRole=null;  
+render();  
+}  
+  
+render();  
+</script>  </body>  
+</html>  
