@@ -1,441 +1,449 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>14 школа — Голос учеников</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
-  .card-shadow { box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05); }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14 школа — Голос учеников</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .card-shadow { box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05); }
+    </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <header class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-b border-slate-800">
-    <div class="max-w-4xl mx-auto px-4 py-8">
-      <div class="flex justify-between items-center gap-4">
-        <div class="flex items-center gap-2">
-          <span class="bg-indigo-600 text-white text-xs font-black px-2.5 py-1 rounded-md tracking-wider">ШКОЛА №14</span>
-          <span class="text-xs text-slate-400 font-medium hidden sm:inline">Школьная платформа обращений</span>
-        </div>
-        <button onclick="openLoginModal()" id="authBadgeBtn" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-white/20 transition-all flex items-center gap-2">
-          <span>🔒</span> <span id="authBadgeText">Вход для учителей</span>
-        </button>
-      </div>
+    <!-- Шапка сайта -->
+    <header class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-b border-slate-800">
+        <div class="max-w-4xl mx-auto px-4 py-8">
+            <div class="flex justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="bg-indigo-600 text-white text-xs font-black px-2.5 py-1 rounded-md tracking-wider">ШКОЛА №14</span>
+                    <span class="text-xs text-slate-400 font-medium hidden sm:inline">Голос учеников</span>
+                </div>
+                <button onclick="openLoginModal()" id="authBadgeBtn" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-white/20 transition-all flex items-center gap-2">
+                    <span>🔒</span> <span id="authBadgeText">Вход для персонала</span>
+                </button>
+            </div>
 
-      <div class="mt-8">
-        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">Твоя школа. <br><span class="text-indigo-400">Твоё мнение.</span></h1>
-        <p class="mt-3 text-slate-300 text-sm sm:text-base max-w-xl">Предлагай свои идеи, сообщай о проблемах и голосуй за важные инициативы. Вместе делаем школу лучше!</p>
-      </div>
+            <div class="mt-8">
+                <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">Твоя школа. <br><span class="text-indigo-400">Твоё мнение.</span></h1>
+                <p class="mt-3 text-slate-300 text-sm sm:text-base max-w-xl">Предлагай идеи, сообщай о проблемах и голосуй за важные инициативы. Вместе делаем школу лучше!</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="max-w-4xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+
+        <!-- Панель УПРАВЛЕНИЯ (Видна админу и парламенту) -->
+        <section id="adminPanel" class="hidden bg-rose-50 border border-rose-200 rounded-2xl p-5 space-y-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">👑</span>
+                    <h2 class="font-bold text-rose-950 text-base" id="panelTitle">Панель управления</h2>
+                </div>
+                <span class="text-xs bg-rose-200 text-rose-900 px-2.5 py-1 rounded-full font-bold" id="roleBadge">Доступ</span>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-2">
+                <button id="toggleToggleChatBtn" onclick="toggleChatStatus()" class="bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-colors">🔒 Закрыть приём идей</button>
+                <button onclick="logoutAdmin()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold text-xs px-4 py-2.5 rounded-xl transition-colors">Выйти</button>
+            </div>
+        </section>
+
+        <!-- Кнопки создания обращений -->
+        <div id="creationActions" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button onclick="openForm('idea')" class="bg-white hover:border-indigo-500 border border-slate-200 p-5 rounded-2xl text-left transition-all card-shadow group">
+                <div class="flex items-center justify-between">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">💡</span>
+                    <span class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">Идея</span>
+                </div>
+                <strong class="block text-base font-bold text-slate-900 mt-3">Предложить идею</strong>
+                <span class="text-xs text-slate-500 mt-1 block">Новые инициативы, мероприятия, предложения по улучшению</span>
+            </button>
+
+            <button onclick="openForm('problem')" class="bg-white hover:border-amber-500 border border-slate-200 p-5 rounded-2xl text-left transition-all card-shadow group">
+                <div class="flex items-center justify-between">
+                    <span class="text-2xl group-hover:scale-110 transition-transform">🗣️</span>
+                    <span class="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">Проблема</span>
+                </div>
+                <strong class="block text-base font-bold text-slate-900 mt-3">Сообщить о проблеме</strong>
+                <span class="text-xs text-slate-500 mt-1 block">Расскажите, что сломано или требует внимания</span>
+            </button>
+        </div>
+
+        <!-- Форма отправки -->
+        <section id="formSection" class="hidden bg-white border border-slate-200 rounded-2xl p-6 card-shadow space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 id="formHeader" class="text-lg font-bold text-slate-900">Новое обращение</h2>
+                <button onclick="closeForm()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            <form id="newPostForm" onsubmit="submitPost(event)" class="space-y-4">
+                <input type="hidden" id="postKind" value="idea">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Категория</label>
+                    <select id="postCategory" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option>Чистота и порядок</option>
+                        <option>Столовая и питание</option>
+                        <option>Школьный двор</option>
+                        <option>Уроки и расписание</option>
+                        <option>Спорт и мероприятия</option>
+                        <option>Другое</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Короткий заголовок</label>
+                    <input type="text" id="postTitle" required maxlength="90" placeholder="Например: Установить скамейки" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Подробное описание</label>
+                    <textarea id="postBody" required maxlength="1200" rows="4" placeholder="Опишите ситуацию..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-colors">Опубликовать</button>
+                    <button type="button" onclick="closeForm()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm px-5 py-2.5 rounded-xl transition-colors">Отмена</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Лента публикаций -->
+        <section class="space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h2 class="text-lg font-bold text-slate-900">Обращения учеников</h2>
+                <div class="flex gap-2 text-xs font-semibold">
+                    <button onclick="setFilter('all')" id="filter-all" class="filter-btn bg-slate-900 text-white px-3 py-1.5 rounded-xl">Все</button>
+                    <button onclick="setFilter('idea')" id="filter-idea" class="filter-btn bg-white text-slate-600 border border-slate-200 px-3 py-1.5 rounded-xl hover:bg-slate-50">💡 Идеи</button>
+                    <button onclick="setFilter('problem')" id="filter-problem" class="filter-btn bg-white text-slate-600 border border-slate-200 px-3 py-1.5 rounded-xl hover:bg-slate-50">🗣️ Проблемы</button>
+                </div>
+            </div>
+            <div id="postsFeed" class="space-y-4">
+                <div class="text-center p-8 text-slate-400">Загрузка данных...</div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-400">
+        14 школа — Голос учеников &copy; 2026.
+    </footer>
+
+    <!-- Модалка Входа -->
+    <div id="loginModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 card-shadow space-y-4 relative">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-bold text-slate-900">Вход для персонала</h3>
+                <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Код доступа</label>
+                    <div class="relative">
+                        <input type="password" id="accessCodeInput" placeholder="Введите пароль..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-10 py-2.5 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <button onclick="performLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm py-2.5 rounded-xl transition-colors">Войти</button>
+            </div>
+        </div>
     </div>
-  </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+    <script>
+        const BIN_ID = "6af3158dffd5d16053b6a4ae"; 
+        const MASTER_KEY = "$2a$10$5OG8yAXzsTfGHDGr/POtMOcu6YnKqlOE1CCYpXFlgRCCiVp7AwWOe";
+        const API_URL = "https://api.jsonbin.io/v3/b/" + BIN_ID;
+        
+        // ПАРОЛИ
+        const ADMIN_PASSWORD = 'bozdakov';
+        const PARLAMENT_PASSWORD = 'ospanov';
 
-    <div id="statusNotice" class="bg-white border border-slate-200 rounded-2xl p-4 card-shadow flex items-start gap-3">
-      <span class="text-xl">📢</span>
-      <div class="text-xs sm:text-sm text-slate-600">
-        <p class="font-semibold text-slate-900">Правила публикации</p>
-        <p id="noticeText" class="mt-0.5">Публикации видны всем ученикам. Не указывайте личные данные, телефоны и фамилии. Оскорбления запрещены.</p>
-      </div>
-    </div>
+        let posts = [];
+        let isFetching = false;
+        let currentFilter = 'all';
+        let userRole = localStorage.getItem('school14_role') || null; 
 
-    <div id="creationActions" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <button onclick="openForm('idea')" class="bg-white hover:border-indigo-500 border border-slate-200 p-5 rounded-2xl text-left transition-all card-shadow group">
-        <div class="flex items-center justify-between">
-          <span class="text-2xl group-hover:scale-110 transition-transform">💡</span>
-          <span class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">Идея</span>
-        </div>
-        <strong class="block text-base font-bold text-slate-900 mt-3">Предложить идею</strong>
-        <span class="text-xs text-slate-500 mt-1 block">Новые инициативы, мероприятия, предложения по улучшению</span>
-      </button>
-
-      <button onclick="openForm('problem')" class="bg-white hover:border-amber-500 border border-slate-200 p-5 rounded-2xl text-left transition-all card-shadow group">
-        <div class="flex items-center justify-between">
-          <span class="text-2xl group-hover:scale-110 transition-transform">🗣️</span>
-          <span class="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">Проблема</span>
-        </div>
-        <strong class="block text-base font-bold text-slate-900 mt-3">Сообщить о проблеме</strong>
-        <span class="text-xs text-slate-500 mt-1 block">Расскажите, что сломалось, мешает или требует внимания</span>
-      </button>
-    </div>
-
-    <section id="adminPanel" class="hidden bg-rose-50 border border-rose-200 rounded-2xl p-5 space-y-3">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="text-xl">👑</span>
-          <h2 class="font-bold text-rose-950 text-base">Панель Администрации школы</h2>
-        </div>
-        <span class="text-xs bg-rose-200 text-rose-900 px-2.5 py-1 rounded-full font-bold">Полный доступ</span>
-      </div>
-      <div class="flex flex-wrap gap-2 pt-2">
-        <button id="toggleToggleChatBtn" onclick="toggleChatStatus()" class="bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-colors">🔒 Закрыть приём</button>
-        <button onclick="logoutAdmin()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold text-xs px-4 py-2.5 rounded-xl transition-colors">Выйти</button>
-      </div>
-    </section>
-
-    <section id="parlamentPanel" class="hidden bg-indigo-50 border border-indigo-200 rounded-2xl p-4 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <span class="text-xl">🏛️</span>
-        <span class="text-xs font-bold text-indigo-950">Режим Школьного Парламента активен</span>
-      </div>
-      <button onclick="logoutAdmin()" class="bg-indigo-200 hover:bg-indigo-300 text-indigo-900 font-semibold text-xs px-3 py-1.5 rounded-lg">Выйти</button>
-    </section>
-
-    <section id="formSection" class="hidden bg-white border border-slate-200 rounded-2xl p-6 card-shadow space-y-4">
-      <div class="flex justify-between items-center">
-        <h2 id="formHeader" class="text-lg font-bold text-slate-900">Новое обращение</h2>
-        <button onclick="closeForm()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
-      </div>
-      <form id="newPostForm" onsubmit="submitPost(event)" class="space-y-4">
-        <input type="hidden" id="postKind" value="idea">
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Категория</label>
-          <select id="postCategory" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <option>Чистота и порядок</option>
-            <option>Столовая и питание</option>
-            <option>Школьный двор</option>
-            <option>Уроки и расписание</option>
-            <option>Спорт и мероприятия</option>
-            <option>Другое</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Короткий заголовок</label>
-          <input type="text" id="postTitle" required maxlength="90" placeholder="Например: Установить скамейки" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        </div>
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Подробное описание</label>
-          <textarea id="postBody" required maxlength="1200" rows="4" placeholder="Опишите ситуацию..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-        </div>
-        <div class="flex gap-3 pt-2">
-          <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-colors">Опубликовать</button>
-          <button type="button" onclick="closeForm()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm px-5 py-2.5 rounded-xl transition-colors">Отмена</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="bg-white border border-slate-200 rounded-2xl p-6 card-shadow space-y-4">
-      <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-        <span>📊</span> Статистика решения вопросов
-      </h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-        <div class="space-y-1.5 text-xs sm:text-sm text-slate-600">
-          <div class="flex justify-between"><span>Всего обращений:</span> <b id="statTotal" class="text-slate-900">0</b></div>
-          <div class="flex justify-between"><span>В работе / рассмотрении:</span> <b id="statActive" class="text-slate-900">0</b></div>
-          <div class="flex justify-between text-emerald-700 font-medium"><span>Успешно решено:</span> <b id="statDone" class="text-emerald-700">0</b></div>
-        </div>
-        <div class="space-y-2">
-          <div class="flex justify-between text-xs font-bold text-slate-700">
-            <span>Эффективность работы:</span>
-            <span id="statPercent" class="text-indigo-600">0%</span>
-          </div>
-          <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
-            <div id="statBar" class="bg-emerald-500 h-full w-0 transition-all duration-500 rounded-full"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h2 class="text-lg font-bold text-slate-900">Обращения учеников</h2>
-        <div class="flex gap-2 text-xs font-semibold">
-          <button onclick="setFilter('all')" id="filter-all" class="filter-btn bg-slate-900 text-white px-3 py-1.5 rounded-xl">Все</button>
-          <button onclick="setFilter('idea')" id="filter-idea" class="filter-btn bg-white text-slate-600 border border-slate-200 px-3 py-1.5 rounded-xl hover:bg-slate-50">💡 Идеи</button>
-          <button onclick="setFilter('problem')" id="filter-problem" class="filter-btn bg-white text-slate-600 border border-slate-200 px-3 py-1.5 rounded-xl hover:bg-slate-50">🗣️ Проблемы</button>
-        </div>
-      </div>
-      <div id="postsFeed" class="space-y-4">
-        <div class="text-center p-8 text-slate-400">Загрузка данных...</div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-400">
-    14 школа — Голос учеников &copy; 2026.
-  </footer>
-
-  <div id="loginModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl p-6 card-shadow space-y-4 relative">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h3 class="text-lg font-bold text-slate-900">Вход для персонала</h3>
-        <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
-      </div>
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Код доступа</label>
-          <div class="relative">
-            <input type="password" id="accessCodeInput" placeholder="Введите пароль..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-10 py-2.5 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm">👁️</button>
-          </div>
-        </div>
-        <button onclick="performLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm py-2.5 rounded-xl transition-colors">Войти</button>
-      </div>
-    </div>
-  </div>
-
-<script>
-  // ТВОИ НОВЫЕ КЛЮЧИ
-  const BIN_ID = "6af2360cffd5d16053b4c2e4"; 
-  const MASTER_KEY = "$2a$10$0yJj/.431XCQ/O9liEl3geOAfR7x.xk7BQ5dVLqbmHlBLiLnej5zO";
-  const API_URL = "https://api.jsonbin.io/v3/b/" + BIN_ID;
-
-  let posts = [];
-  let chatClosed = false;
-  let currentFilter = 'all';
-  let userRole = localStorage.getItem('school14_role') || null; 
-  let isFetching = false; 
-
-  const ADMIN_PASSWORD = 'bozdakov';
-  const PARLAMENT_PASSWORD = 'parlament14';
-
-  async function loadData() {
-    if (isFetching) return;
-    isFetching = true;
-
-    try {
-      const res = await fetch(`${API_URL}/latest`, {
-        headers: { 
-          'X-Master-Key': MASTER_KEY, 
-          'X-Bin-Meta': 'false' 
+        async function loadData() {
+            if (isFetching) return;
+            isFetching = true;
+            try {
+                const res = await fetch(`${API_URL}/latest?t=${Date.now()}`, {
+                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                });
+                
+                if (res.status === 429) { isFetching = false; return; }
+                if (!res.ok) throw new Error("Ошибка сети");
+                
+                const data = await res.json();
+                
+                if (data && data.posts) {
+                    posts = data.posts;
+                    posts.sort((a, b) => b.created - a.created);
+                    render();
+                } else {
+                    saveData();
+                }
+            } catch (e) {
+                console.error("Ошибка загрузки:", e);
+                document.getElementById('postsFeed').innerHTML = `<div class="text-center p-8 text-rose-500 font-bold">Ошибка подключения к базе данных.</div>`;
+            } finally {
+                isFetching = false;
+            }
         }
-      });
-      
-      if (res.status === 429) { isFetching = false; return; } 
-      if (!res.ok) throw new Error(`HTTP Ошибка: ${res.status}`);
-      
-      const data = await res.json();
-      if (data && data.posts) {
-        posts = data.posts;
-        posts.sort((a, b) => b.created - a.created);
-        chatClosed = data.chatClosed || false;
-        render();
-      } else {
-        saveData();
-      }
-    } catch(e) {
-      console.error("Ошибка загрузки:", e);
-      if (!e.message.includes("429")) {
-        document.getElementById('postsFeed').innerHTML = `
-          <div class="text-center p-8 text-rose-500 font-bold bg-rose-50 rounded-2xl border border-rose-200">
-            Ошибка подключения к базе данных.
-            <br><span class="text-xs font-normal mt-2 block opacity-80">Детали: ${e.message}</span>
-          </div>`;
-      }
-    } finally {
-      isFetching = false;
-    }
-  }
 
-  async function saveData() {
-    try {
-      const res = await fetch(API_URL, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-Master-Key': MASTER_KEY 
-        },
-        body: JSON.stringify({ posts: posts, chatClosed: chatClosed })
-      });
-      if (!res.ok) throw new Error(`HTTP Ошибка: ${res.status}`);
-      loadData(); 
-    } catch(e) {
-      console.error("Ошибка сохранения:", e);
-      alert("Ошибка соединения. Попробуйте еще раз.");
-    }
-  }
+        async function saveData() {
+            try {
+                await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': MASTER_KEY
+                    },
+                    body: JSON.stringify({ posts: posts })
+                });
+                loadData();
+            } catch (e) {
+                console.error("Ошибка сохранения:", e);
+                alert("Не удалось сохранить данные. Проверьте интернет.");
+            }
+        }
 
-  setInterval(loadData, 15000); 
+        function openForm(kind) {
+            if (userRole !== 'admin' && localStorage.getItem('school14_chat_closed') === 'true') {
+                alert('Приём обращений временно закрыт администрацией школы.');
+                return;
+            }
+            document.getElementById('postKind').value = kind;
+            document.getElementById('formHeader').textContent = kind === 'idea' ? 'Предложить новую идею' : 'Сообщить о проблеме';
+            document.getElementById('formSection').classList.remove('hidden');
+            document.getElementById('postTitle').focus();
+        }
 
-  function openForm(kind) {
-    if (chatClosed && userRole !== 'admin') { alert('Приём новых обращений временно закрыт.'); return; }
-    document.getElementById('postKind').value = kind;
-    document.getElementById('formHeader').textContent = kind === 'idea' ? 'Предложить новую идею' : 'Сообщить о проблеме';
-    document.getElementById('formSection').classList.remove('hidden');
-    document.getElementById('postTitle').focus();
-  }
+        function closeForm() {
+            document.getElementById('formSection').classList.add('hidden');
+            document.getElementById('newPostForm').reset();
+        }
 
-  function closeForm() {
-    document.getElementById('formSection').classList.add('hidden');
-    document.getElementById('newPostForm').reset();
-  }
+        function submitPost(e) {
+            e.preventDefault();
+            const newPost = {
+                id: Date.now(),
+                kind: document.getElementById('postKind').value,
+                category: document.getElementById('postCategory').value,
+                title: document.getElementById('postTitle').value.trim(),
+                body: document.getElementById('postBody').value.trim(),
+                votes: 1, status: 'Новое', answer: '', created: Date.now()
+            };
 
-  function submitPost(e) {
-    e.preventDefault();
-    if (chatClosed && userRole !== 'admin') { alert('Приём обращений временно закрыт.'); return; }
+            posts.unshift(newPost);
+            saveData();
+            closeForm();
+        }
 
-    const newPost = {
-      id: 'post-' + Date.now(),
-      kind: document.getElementById('postKind').value,
-      category: document.getElementById('postCategory').value,
-      title: document.getElementById('postTitle').value.trim(),
-      body: document.getElementById('postBody').value.trim(),
-      votes: 1, status: 'Новое', answer: '', created: Date.now()
-    };
+        function vote(id) {
+            const votedList = JSON.parse(localStorage.getItem('voted_posts_v4') || '[]');
+            if (votedList.includes(id)) { alert('Вы уже поддержали это обращение.'); return; }
 
-    posts.unshift(newPost); 
-    saveData(); 
-    closeForm();
-  }
+            const post = posts.find(p => p.id === id);
+            if (post) {
+                post.votes++;
+                votedList.push(id);
+                localStorage.setItem('voted_posts_v4', JSON.stringify(votedList));
+                saveData();
+            }
+        }
 
-  function vote(id) {
-    const votedList = JSON.parse(localStorage.getItem('voted_posts_json') || '[]');
-    if (votedList.includes(id)) { alert('Вы уже поддержали это обращение.'); return; }
+        // --- ЛОГИКА ВХОДА ---
+        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
+        function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); document.getElementById('accessCodeInput').value = ''; }
 
-    const post = posts.find(p => p.id === id);
-    if (post) {
-      post.votes++;
-      votedList.push(id);
-      localStorage.setItem('voted_posts_json', JSON.stringify(votedList));
-      saveData();
-    }
-  }
+        function performLogin() {
+            const code = document.getElementById('accessCodeInput').value.trim();
+            
+            if (code === ADMIN_PASSWORD) {
+                userRole = 'admin';
+                localStorage.setItem('school14_role', 'admin');
+                closeLoginModal();
+                updateRoleUI();
+                render();
+                alert('Вы успешно вошли как Администратор!');
+            } else if (code === PARLAMENT_PASSWORD) {
+                userRole = 'parlament';
+                localStorage.setItem('school14_role', 'parlament');
+                closeLoginModal();
+                updateRoleUI();
+                render();
+                alert('Вы успешно вошли как Парламент!');
+            } else {
+                alert('❌ Неверный код доступа!');
+            }
+        }
 
-  function toggleChatStatus() { chatClosed = !chatClosed; saveData(); }
-  function updateStatus(id, newStatus) { const post = posts.find(p => p.id === id); if (post) { post.status = newStatus; saveData(); } }
-  function updateAnswer(id, answerText) { const post = posts.find(p => p.id === id); if (post) { post.answer = answerText; saveData(); } }
-  function deletePost(id) { if (userRole === 'admin' && confirm('Удалить обращение?')) { posts = posts.filter(p => p.id !== id); saveData(); } }
-  function saveAnswerBtn(id) { const text = document.getElementById('answer-' + id).value.trim(); updateAnswer(id, text); alert('Ответ сохранен!'); }
+        function logoutAdmin() {
+            userRole = null;
+            localStorage.removeItem('school14_role');
+            updateRoleUI();
+            render();
+            alert('Вы вышли из режима управления.');
+        }
 
-  function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
-  function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
-  function togglePasswordVisibility() { const input = document.getElementById('accessCodeInput'); input.type = input.type === 'password' ? 'text' : 'password'; }
+        function updateRoleUI() {
+            const badgeText = document.getElementById('authBadgeText');
+            const badgeBtn = document.getElementById('authBadgeBtn');
+            const adminPanel = document.getElementById('adminPanel');
+            const panelTitle = document.getElementById('panelTitle');
+            const roleBadge = document.getElementById('roleBadge');
 
-  function performLogin() {
-    const code = document.getElementById('accessCodeInput').value.trim();
-    if (code === ADMIN_PASSWORD) { userRole = 'admin'; localStorage.setItem('school14_role', 'admin'); closeLoginModal(); }
-    else if (code === PARLAMENT_PASSWORD) { userRole = 'parlament'; localStorage.setItem('school14_role', 'parlament'); closeLoginModal(); }
-    else { alert('Неверный код доступа.'); return; }
-    document.getElementById('accessCodeInput').value = '';
-    updateRoleUI(); render();
-  }
+            if (userRole === 'admin') {
+                badgeText.textContent = 'Администратор';
+                badgeBtn.className = 'bg-rose-600 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-rose-400 flex items-center gap-2';
+                adminPanel.classList.remove('hidden');
+                panelTitle.textContent = 'Панель Администратора';
+                roleBadge.textContent = 'Полный доступ';
+            } else if (userRole === 'parlament') {
+                badgeText.textContent = 'Парламент';
+                badgeBtn.className = 'bg-indigo-600 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-indigo-400 flex items-center gap-2';
+                adminPanel.classList.remove('hidden');
+                panelTitle.textContent = 'Панель Парламента';
+                roleBadge.textContent = 'Доступ к ответам';
+            } else {
+                badgeText.textContent = 'Вход для персонала';
+                badgeBtn.className = 'bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-white/20 transition-all flex items-center gap-2';
+                adminPanel.classList.add('hidden');
+            }
+        }
 
-  function logoutAdmin() { userRole = null; localStorage.removeItem('school14_role'); updateRoleUI(); render(); }
+        function updateStatus(id, newStatus) {
+            const post = posts.find(p => p.id === id);
+            if (post) { post.status = newStatus; saveData(); }
+        }
 
-  function updateRoleUI() {
-    const badgeText = document.getElementById('authBadgeText');
-    const badgeBtn = document.getElementById('authBadgeBtn');
-    const adminPanel = document.getElementById('adminPanel');
-    const parlamentPanel = document.getElementById('parlamentPanel');
+        function updateAnswer(id, answerText) {
+            const post = posts.find(p => p.id === id);
+            if (post) { post.answer = answerText; saveData(); }
+        }
 
-    if (userRole === 'admin') {
-      badgeText.textContent = 'Администратор';
-      badgeBtn.className = 'bg-rose-600 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-rose-400 flex items-center gap-2';
-      adminPanel.classList.remove('hidden'); parlamentPanel.classList.add('hidden');
-    } else if (userRole === 'parlament') {
-      badgeText.textContent = 'Парламент';
-      badgeBtn.className = 'bg-indigo-600 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-indigo-400 flex items-center gap-2';
-      adminPanel.classList.add('hidden'); parlamentPanel.classList.remove('hidden');
-    } else {
-      badgeText.textContent = 'Вход для учителей';
-      badgeBtn.className = 'bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3.5 py-2 rounded-full border border-white/20 transition-all flex items-center gap-2';
-      adminPanel.classList.add('hidden'); parlamentPanel.classList.add('hidden');
-    }
-  }
+        function deletePost(id) {
+            if (userRole !== 'admin') {
+                alert('Удалять обращения может только Администратор.');
+                return;
+            }
+            if (confirm('Вы уверены, что хотите удалить это обращение?')) {
+                posts = posts.filter(p => p.id !== id);
+                saveData();
+            }
+        }
 
-  function setFilter(filter) {
-    currentFilter = filter;
-    document.querySelectorAll('.filter-btn').forEach(btn => { btn.className = 'filter-btn bg-white text-slate-600 border border-slate-200 px-3 py-1.5 rounded-xl hover:bg-slate-50'; });
-    document.getElementById(`filter-${filter}`).className = 'filter-btn bg-slate-900 text-white px-3 py-1.5 rounded-xl';
-    render();
-  }
+        function toggleChatStatus() {
+            if (userRole !== 'admin') {
+                alert('Закрывать приём может только Администратор.');
+                return;
+            }
+            const isClosed = localStorage.getItem('school14_chat_closed') === 'true';
+            localStorage.setItem('school14_chat_closed', !isClosed);
+            render();
+        }
 
-  function render() {
-    updateRoleUI();
-    const toggleBtn = document.getElementById('toggleToggleChatBtn');
-    if (toggleBtn) toggleBtn.textContent = chatClosed ? '🟢 Открыть приём' : '🔒 Закрыть приём';
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.className = 'filter-btn bg-white text-slate-600 border border-slate-200 px-3 py-1.5 rounded-xl hover:bg-slate-50';
+            });
+            document.getElementById(`filter-${filter}`).className = 'filter-btn bg-slate-900 text-white px-3 py-1.5 rounded-xl';
+            render();
+        }
 
-    const noticeText = document.getElementById('noticeText');
-    const creationActions = document.getElementById('creationActions');
-    if (chatClosed) {
-      noticeText.innerHTML = '<b class="text-rose-600">Приём новых обращений приостановлен.</b>';
-      creationActions.style.opacity = '0.5';
-    } else {
-      noticeText.textContent = 'Публикации видны всем ученикам. Оскорбления запрещены.';
-      creationActions.style.opacity = '1';
-    }
+        function render() {
+            updateRoleUI();
+            const isClosed = localStorage.getItem('school14_chat_closed') === 'true';
+            const toggleBtn = document.getElementById('toggleToggleChatBtn');
+            
+            if (toggleBtn) {
+                toggleBtn.textContent = isClosed ? '🟢 Открыть приём' : '🔒 Закрыть приём идей';
+            }
 
-    const total = posts.length;
-    const done = posts.filter(p => p.status === 'Выполнено').length;
-    const active = total - done;
-    const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+            const filtered = posts.filter(p => currentFilter === 'all' || p.kind === currentFilter);
+            const feed = document.getElementById('postsFeed');
+            feed.innerHTML = '';
 
-    document.getElementById('statTotal').textContent = total;
-    document.getElementById('statActive').textContent = active;
-    document.getElementById('statDone').textContent = done;
-    document.getElementById('statPercent').textContent = percent + '%';
-    document.getElementById('statBar').style.width = percent + '%';
+            if (filtered.length === 0) {
+                feed.innerHTML = `<div class="bg-white border border-slate-200 rounded-2xl p-8 text-center card-shadow"><span class="text-4xl block mb-2">📭</span><p class="text-slate-500 font-medium">Обращений пока нет.</p></div>`;
+                return;
+            }
 
-    const filtered = posts.filter(p => currentFilter === 'all' || p.kind === currentFilter);
-    const feed = document.getElementById('postsFeed');
-    feed.innerHTML = '';
+            const votedList = JSON.parse(localStorage.getItem('voted_posts_v4') || '[]');
 
-    if (filtered.length === 0) {
-      feed.innerHTML = `<div class="bg-white border border-slate-200 rounded-2xl p-8 text-center card-shadow"><span class="text-4xl block mb-2">📭</span><p class="text-slate-500 font-medium">Обращений пока нет.</p></div>`;
-      return;
-    }
+            filtered.forEach(p => {
+                const isDone = p.status === 'Выполнено';
+                const isNew = p.status === 'Новое';
+                const isWork = p.status === 'В работе';
+                
+                let statusClass = "bg-slate-100 text-slate-700";
+                if (isDone) statusClass = "bg-emerald-100 text-emerald-700";
+                if (isWork) statusClass = "bg-amber-100 text-amber-700";
+                if (isNew) statusClass = "bg-blue-100 text-blue-700";
 
-    const votedList = JSON.parse(localStorage.getItem('voted_posts_json') || '[]');
+                const hasVoted = votedList.includes(p.id);
+                const voteBtnClass = hasVoted 
+                    ? "bg-indigo-50 text-indigo-600 border border-indigo-200 cursor-not-allowed" 
+                    : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200";
+                
+                let controlsHtml = "";
+                if (userRole === 'admin' || userRole === 'parlament') {
+                    controlsHtml = `
+                    <div class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                        <p class="text-xs font-bold text-slate-700">Управление:</p>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <select onchange="updateStatus('${p.id}', this.value)" class="bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-medium focus:outline-none">
+                                <option value="Новое" ${p.status === 'Новое' ? 'selected' : ''}>Новое</option>
+                                <option value="В работе" ${p.status === 'В работе' ? 'selected' : ''}>В работе</option>
+                                <option value="Выполнено" ${p.status === 'Выполнено' ? 'selected' : ''}>Выполнено</option>
+                                <option value="Отклонено" ${p.status === 'Отклонено' ? 'selected' : ''}>Отклонено</option>
+                            </select>
+                            <button onclick="saveAnswerBtn('${p.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">Сохранить ответ</button>
+                            ${userRole === 'admin' ? `<button onclick="deletePost('${p.id}')" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ml-auto">Удалить</button>` : ''}
+                        </div>
+                        <textarea id="answer-${p.id}" placeholder="Напишите официальный ответ..." class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">${p.answer || ''}</textarea>
+                    </div>`;
+                }
 
-    filtered.forEach(p => {
-      const isDone = p.status === 'Выполнено', isNew = p.status === 'Новое', isWork = p.status === 'В работе';
-      let statusClass = "bg-slate-100 text-slate-700";
-      if (isDone) statusClass = "bg-emerald-100 text-emerald-700";
-      if (isWork) statusClass = "bg-amber-100 text-amber-700";
-      if (isNew) statusClass = "bg-blue-100 text-blue-700";
+                feed.innerHTML += `
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 card-shadow space-y-3">
+                    <div class="flex justify-between items-start gap-3">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded">${p.category}</span>
+                                <span class="text-[10px] font-bold text-${p.kind === 'idea' ? 'indigo' : 'amber'}-600 bg-${p.kind === 'idea' ? 'indigo' : 'amber'}-50 px-2 py-0.5 rounded">${p.kind === 'idea' ? '💡 Идея' : '🗣️ Проблема'}</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-900 leading-tight">${p.title}</h3>
+                        </div>
+                        <span class="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0 ${statusClass}">${p.status}</span>
+                    </div>
+                    <p class="text-sm text-slate-600 leading-relaxed">${p.body}</p>
+                    
+                    ${p.answer ? `<div class="mt-3 p-3.5 bg-indigo-50 border border-indigo-100 rounded-xl text-sm text-indigo-950"><b class="text-indigo-800">🏛️ Ответ:</b> ${p.answer}</div>` : ''}
+                    
+                    <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+                        <span class="text-xs font-bold text-slate-500 flex items-center gap-1">👍 <span>${p.votes} голосов</span></span>
+                        <button onclick="vote('${p.id}')" ${hasVoted ? 'disabled' : ''} class="text-xs font-bold px-4 py-2 rounded-xl transition-colors ${voteBtnClass}">
+                            ${hasVoted ? 'Вы проголосовали' : 'Поддержать'}
+                        </button>
+                    </div>
+                    ${controlsHtml}
+                </div>
+                `;
+            });
+        }
 
-      const hasVoted = votedList.includes(p.id);
-      const voteBtnClass = hasVoted ? "bg-indigo-50 text-indigo-600 border border-indigo-200 cursor-not-allowed" : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200";
-      
-      let controlsHtml = "";
-      if (userRole === 'admin' || userRole === 'parlament') {
-          controlsHtml = `
-          <div class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-              <p class="text-xs font-bold text-slate-700">Управление:</p>
-              <div class="flex flex-wrap gap-2 items-center">
-                  <select onchange="updateStatus('${p.id}', this.value)" class="bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-medium focus:outline-none">
-                      <option value="Новое" ${p.status === 'Новое' ? 'selected' : ''}>Новое</option>
-                      <option value="В работе" ${p.status === 'В работе' ? 'selected' : ''}>В работе</option>
-                      <option value="Выполнено" ${p.status === 'Выполнено' ? 'selected' : ''}>Выполнено</option>
-                      <option value="Отклонено" ${p.status === 'Отклонено' ? 'selected' : ''}>Отклонено</option>
-                  </select>
-                  <button onclick="saveAnswerBtn('${p.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">Сохранить ответ</button>
-                  ${userRole === 'admin' ? `<button onclick="deletePost('${p.id}')" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ml-auto">Удалить</button>` : ''}
-              </div>
-              <textarea id="answer-${p.id}" placeholder="Напишите официальный ответ..." class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">${p.answer || ''}</textarea>
-          </div>`;
-      }
+        function saveAnswerBtn(id) {
+            const textarea = document.getElementById('answer-' + id);
+            updateAnswer(id, textarea.value.trim());
+            alert('Ответ сохранен и опубликован!');
+            render();
+        }
 
-      feed.innerHTML += `
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 card-shadow space-y-3">
-          <div class="flex justify-between items-start gap-3">
-              <div>
-                  <div class="flex items-center gap-2 mb-1">
-                      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded">${p.category}</span>
-                      <span class="text-[10px] font-bold text-${p.kind === 'idea' ? 'indigo' : 'amber'}-600 bg-${p.kind === 'idea' ? 'indigo' : 'amber'}-50 px-2 py-0.5 rounded">${p.kind === 'idea' ? '💡 Идея' : '🗣️ Проблема'}</span>
-                  </div>
-                  <h3 class="text-lg font-bold text-slate-900 leading-tight">${p.title}</h3>
-              </div>
-              <span class="text-[11px] font-bold px-2.5 py-1 rounded-full shrink-0 ${statusClass}">${p.status}</span>
-          </div>
-          <p class="text-sm text-slate-600 leading-relaxed">${p.body}</p>
-          ${p.answer ? `<div class="mt-3 p-3.5 bg-indigo-50 border border-indigo-100 rounded-xl text-sm text-indigo-950"><b class="text-indigo-800">🏛️ Ответ:</b> ${p.answer}</div>` : ''}
-          <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-              <span class="text-xs font-bold text-slate-500 flex items-center gap-1">👍 <span>${p.votes} голосов</span></span>
-              <button onclick="vote('${p.id}')" ${hasVoted ? 'disabled' : ''} class="text-xs font-bold px-4 py-2 rounded-xl transition-colors ${voteBtnClass}">
-                  ${hasVoted ? 'Вы проголосовали' : 'Поддержать'}
-              </button>
-          </div>
-          ${controlsHtml}
-      </div>`;
-    });
-  }
-
-  updateRoleUI();
-  loadData();
-</script>
+        window.onload = () => {
+            updateRoleUI();
+            loadData();
+        };
+        
+        setInterval(loadData, 10000);
+    </script>
 </body>
 </html>
